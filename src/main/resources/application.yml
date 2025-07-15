@@ -5,3 +5,11 @@
 #server.port=8080
 server:
   port: 8080
+
+spring:
+#  \uC544\uB798\uB294 jdbc\uC758 \uAE30\uBCF8 db\uAD00\uB828 \uC124\uC815\uC778\uB370, jdbc\uBFD0\uB9CC\uC544\uB2C8\uB77C mybatis, jpa \uB4F1 spring\uC758 \uB300\uBD80\uBD84\uC758 \uAE30\uC220\uC5D0 \uB3D9\uC77C\uD558\uAC8C \uC0AC\uC6A9
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://localhost:3306/board
+    username: root
+    password: 1234
