@@ -3,6 +3,7 @@ package com.beyond.basic.b2_board.domain;
 import com.beyond.basic.b2_board.dto.AuthorDetailDto;
 import com.beyond.basic.b2_board.dto.AuthorListDto;
 import com.beyond.basic.b2_board.repository.AuthorMemoryRepository;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,10 +13,20 @@ import lombok.ToString;
 @Getter
 @AllArgsConstructor
 @ToString
+// JPA 를 사용할경우 Entity 반드시 붙여야하는 어노테이션
+// JPA 의 EntityManager 에게 객체를 위임하기 위한 어노테이션
+// 엔티티매니저는 영속성컨텍스트(엔티티의 현재상황)를 통해 db 데이터 관리
+@Entity
 public class Author {
+    @Id // pk 설정
+//    indentity : auto_increment, auto는 : id 생성전략을 jpa 에게 자동설정하도록 위임하는것.
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+//    컬럼에 별다른 설정이 없을경우 default varchar(255)
     private String name;
+    @Column(length=50, unique = true, nullable = false)
     private String email;
+//    @Column(name = "pw") : 되도록이면 컬럼명과 변수명을 일치시키는것이 개발의 혼선을 줄일수 있음.
     private String password;
 
     public Author(String name, String email, String password) {
