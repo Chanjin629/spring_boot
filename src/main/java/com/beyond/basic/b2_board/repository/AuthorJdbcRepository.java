@@ -42,7 +42,24 @@ public class AuthorJdbcRepository {
     }
 
     public List<Author> findAll() {
-        return null;
+        List<Author> authorList = new ArrayList<>();
+        try {
+            Connection connection = dataSource.getConnection();
+            String sql = "select * from author";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Long id = rs.getLong("id");
+                String name = rs.getString("name");
+                String email = rs.getString("email");
+                String password = rs.getString("password");
+                Author author = new Author(id, name, email, password);
+                authorList.add(author);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return authorList;
     }
 
     public Optional<Author> findById(Long inputId){
@@ -53,12 +70,14 @@ public class AuthorJdbcRepository {
             PreparedStatement ps = connection.prepareStatement(sql);
             ps.setLong(1, inputId);
             ResultSet rs = ps.executeQuery();
-            rs.next();
-            Long id = rs.getLong("id");
-            String name = rs.getString("name");
-            String email = rs.getString("email");
-            String password = rs.getString("password");
-            author = new Author(id, name, email, password);
+            if(rs.next()){
+                Long id = rs.getLong("id");
+                String name = rs.getString("name");
+                String email = rs.getString("email");
+                String password = rs.getString("password");
+                author = new Author(id, name, email, password);
+            }
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -87,6 +106,14 @@ public class AuthorJdbcRepository {
     }
 
     public void delete(Long id){
-
+        try {
+            Connection connection = dataSource.getConnection();
+            String sql = "delete from author where id = ?";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setLong(1, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

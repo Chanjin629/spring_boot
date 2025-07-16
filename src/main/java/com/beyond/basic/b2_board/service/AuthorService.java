@@ -66,7 +66,9 @@ public class AuthorService {
     @Transactional(readOnly = true)
     public AuthorDetailDto findById(Long id){
         Author author  = authorRepository.findById(id).orElseThrow(()->new NoSuchElementException("없는아이디"));
-        AuthorDetailDto dto = AuthorDetailDto.fromEntity(author); //author.detailFromEntity();//new AuthorDetailDto(author.getId(),author.getName(),author.getEmail());
+        AuthorDetailDto dto = AuthorDetailDto.fromEntity(author);
+        // author.detailFromEntity();
+        // new AuthorDetailDto(author.getId(),author.getName(),author.getEmail());
         return dto;
     }
 
