@@ -1,7 +1,7 @@
-package com.beyond.basic.b2_board.repository;
+package com.beyond.basic.b2_board.author.repository;
 
-import com.beyond.basic.b2_board.domain.Author;
-import com.beyond.basic.b2_board.dto.AuthorListDto;
+import com.beyond.basic.b2_board.author.domain.Author;
+import com.beyond.basic.b2_board.author.dto.AuthorListDto;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;

@@ -1,15 +1,16 @@
-package com.beyond.basic.b2_board.controller;
+package com.beyond.basic.b2_board.author.controller;
 
-import com.beyond.basic.b2_board.domain.Author;
-import com.beyond.basic.b2_board.dto.*;
-import com.beyond.basic.b2_board.service.AuthorService;
+import com.beyond.basic.b2_board.author.dto.AuthorCreateDto;
+import com.beyond.basic.b2_board.author.dto.AuthorListDto;
+import com.beyond.basic.b2_board.author.dto.AuthorUpdatePwDto;
+import com.beyond.basic.b2_board.author.service.AuthorService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @RestController // controller + responsebody
 @RequiredArgsConstructor
@@ -19,7 +20,8 @@ public class AuthorController {
     // 회원가입
     @PostMapping("/create")
     // ResponseEntity<?> 모든객체 허용가능
-    public ResponseEntity<?> save(@RequestBody AuthorCreateDto authorCreateDto){
+    // dto에 있는 validation어노테이션과 controller @Valid한쌍
+    public ResponseEntity<?> save(@Valid @RequestBody AuthorCreateDto authorCreateDto){
 //        try{
 //            this.authorService.save(authorCreateDto);
 //            return new ResponseEntity<>("OK", HttpStatus.CREATED);
@@ -43,7 +45,6 @@ public class AuthorController {
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> detail(@PathVariable Long id){
             return new ResponseEntity<>(authorService.findById(id), HttpStatus.CREATED);
-
     }
     // 비밀번호수정 : email,password -> json
     @PatchMapping("/updatepw")

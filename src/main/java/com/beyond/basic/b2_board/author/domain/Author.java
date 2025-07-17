@@ -1,13 +1,12 @@
-package com.beyond.basic.b2_board.domain;
+package com.beyond.basic.b2_board.author.domain;
 
-import com.beyond.basic.b2_board.dto.AuthorDetailDto;
-import com.beyond.basic.b2_board.dto.AuthorListDto;
-import com.beyond.basic.b2_board.repository.AuthorMemoryRepository;
+import com.beyond.basic.b2_board.author.dto.AuthorDetailDto;
+import com.beyond.basic.b2_board.author.dto.AuthorListDto;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @Getter
@@ -17,6 +16,8 @@ import lombok.ToString;
 // JPA 의 EntityManager 에게 객체를 위임하기 위한 어노테이션
 // 엔티티매니저는 영속성컨텍스트(엔티티의 현재상황)를 통해 db 데이터 관리
 @Entity
+// Builder어노테이션을 통해 유연하게 객체 생성 가능.
+@Builder
 public class Author {
     @Id // pk 설정
 //    indentity : auto_increment, auto는 : id 생성전략을 jpa 에게 자동설정하도록 위임하는것.
@@ -28,13 +29,22 @@ public class Author {
     private String email;
 //    @Column(name = "pw") : 되도록이면 컬럼명과 변수명을 일치시키는것이 개발의 혼선을 줄일수 있음.
     private String password;
+    @Enumerated(EnumType.STRING)
+    @Builder.Default // 빌더패턴에서 변수 초기화(디폴트값)시 builder.default어노테이션 필수
+    private Role role = Role.User;
+//    컬럼명에 캐멀케이스 사용시, db에는 created_time으로 컬럼생성
+    @CreationTimestamp
+    private LocalDateTime createdDate;
+    @UpdateTimestamp
+    private LocalDateTime updatedDate;
 
-    public Author(String name, String email, String password) {
-        //this.id = AuthorMemoryRepository.id;
-        this.name = name;
-        this.email = email;
-        this.password = password;
-    }
+//    public Author(String name, String email, String password,  Role role) {
+//        //this.id = AuthorMemoryRepository.id;
+//        this.name = name;
+//        this.email = email;
+//        this.password = password;
+//        this.role = role;
+//    }
     public void updatePw(String password){
         this.password = password;
     }
