@@ -17,7 +17,7 @@
 //@Repository
 //public class AuthorJdbcRepository {
 //    // Datasource는 DB와 JDBC에서 사용하는 DB연결 드라이버 객체
-//    // application.yml 에 설정한 DB정보를 사용하여 dataSouce객체 싱글톤 생성
+//    // application-local.yml 에 설정한 DB정보를 사용하여 dataSouce객체 싱글톤 생성
 //    @Autowired
 //    private DataSource dataSource;
 //

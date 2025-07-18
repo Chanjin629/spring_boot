@@ -8,6 +8,8 @@ import com.beyond.basic.b2_board.author.dto.AuthorUpdatePwDto;
 //import com.beyond.basic.b2_board.repository.AuthorJdbcRepository;
 //import com.beyond.basic.b2_board.repository.AuthorMemoryRepository;
 import com.beyond.basic.b2_board.author.repository.AuthorRepository;
+import com.beyond.basic.b2_board.post.domain.Post;
+import com.beyond.basic.b2_board.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +41,7 @@ public class AuthorService {
     // 의존성주입방법3. RequiredArgs 어노테이션 사용 -> 반드시 초기화 되어야 하는 필드(final 등)을 대상으로 생성자를 자동생성
     // 다형성 설계는 불가
     private final AuthorRepository authorRepository;
+    private final PostRepository postRepository;
     public void save(AuthorCreateDto authorCreateDto){
         // 이메을 중복검증
         if(authorRepository.findByEmail(authorCreateDto.getEmail()).isPresent()){
@@ -65,6 +68,12 @@ public class AuthorService {
     @Transactional(readOnly = true)
     public AuthorDetailDto findById(Long id){
         Author author  = authorRepository.findById(id).orElseThrow(()->new NoSuchElementException("없는아이디"));
+
+//        연관관계 설정없이 직접 조회해서 count 값 찾는경우
+//        List<Post> postList = postRepository.findByAuthorId(id);
+//        List<Post> postList = postRepository.findByAuthor(author);
+//        AuthorDetailDto dto = AuthorDetailDto.fromEntity(author, postList.size());
+
         AuthorDetailDto dto = AuthorDetailDto.fromEntity(author);
         // author.detailFromEntity();
         // new AuthorDetailDto(author.getId(),author.getName(),author.getEmail());

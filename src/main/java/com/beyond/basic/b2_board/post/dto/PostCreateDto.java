@@ -21,6 +21,7 @@ public class PostCreateDto {
     private String contents;
     @NotNull // 숫자는 NotEmpty 사용불가
     private Long authorId;
+    private String delYn;
 
     public Post toEntity(Author author){
         return Post.builder()
@@ -28,6 +29,7 @@ public class PostCreateDto {
                 .contents(this.contents)
 //                .authorId(this.authorId)
                 .author(author)
+                .delYn("N")
                 .build();
     }
 

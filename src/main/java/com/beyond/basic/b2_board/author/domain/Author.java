@@ -2,11 +2,15 @@ package com.beyond.basic.b2_board.author.domain;
 
 import com.beyond.basic.b2_board.author.dto.AuthorDetailDto;
 import com.beyond.basic.b2_board.author.dto.AuthorListDto;
+import com.beyond.basic.b2_board.common.BaseTimeEntity;
+import com.beyond.basic.b2_board.post.domain.Post;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @NoArgsConstructor
 @Getter
@@ -18,7 +22,7 @@ import java.time.LocalDateTime;
 @Entity
 // Builder어노테이션을 통해 유연하게 객체 생성 가능.
 @Builder
-public class Author {
+public class Author extends BaseTimeEntity {
     @Id // pk 설정
 //    indentity : auto_increment, auto는 : id 생성전략을 jpa 에게 자동설정하도록 위임하는것.
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,11 +36,17 @@ public class Author {
     @Enumerated(EnumType.STRING)
     @Builder.Default // 빌더패턴에서 변수 초기화(디폴트값)시 builder.default어노테이션 필수
     private Role role = Role.User;
+
+//    OneToMany 는 선택사항, 또한 default 가 lazy
+//    mappedBy ManyToOne 쪽에 변수명을 문자열로 지정. fk 관리를 반대편(post)쪽에서 한다는 의미 -> 연관관계의 주인설정
+    @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
+    @Builder.Default
+    List<Post> postList = new ArrayList<>();
 //    컬럼명에 캐멀케이스 사용시, db에는 created_time으로 컬럼생성
-    @CreationTimestamp
-    private LocalDateTime createdDate;
-    @UpdateTimestamp
-    private LocalDateTime updatedDate;
+//    @CreationTimestamp
+//    private LocalDateTime createdDate;
+//    @UpdateTimestamp
+//    private LocalDateTime updatedDate;
 
 //    public Author(String name, String email, String password,  Role role) {
 //        //this.id = AuthorMemoryRepository.id;
@@ -49,9 +59,9 @@ public class Author {
         this.password = password;
     }
 
-    public AuthorDetailDto detailFromEntity(){
-        return new AuthorDetailDto(this.id, this.name, this.email);
-    }
+//    public AuthorDetailDto detailFromEntity(){
+//        return new AuthorDetailDto(this.id, this.name, this.email);
+//    }
 
     public AuthorListDto listFromEntity(){
         return new AuthorListDto(this.id, this.name, this.email);

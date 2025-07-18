@@ -10,6 +10,8 @@ import com.beyond.basic.b2_board.post.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,8 +47,22 @@ public class PostService {
         return PostDetailDto.fromEntity(post);
     }
 
-    public List<PostListDto> findAll(){
-        List<Post> postList = postRepository.findAll();
-        return postList.stream().map(a->PostListDto.fromEntity(a)).collect(Collectors.toList());
+//    public List<PostListDto> findAll(){
+//        List<Post> postList = postRepository.findAll();
+//        return postList.stream().map(a->PostListDto.fromEntity(a)).collect(Collectors.toList());
+//    }
+    public Page<PostListDto> findAll(Pageable pageable){
+//        List<Post> postList = postRepository.findAll();
+//        List<Post> postList = postRepository.findAllJoin();
+//        List<Post> postList = postRepository.findAllFetchJoin();
+//        postlist 조회할때 참조관계에 있는 author까지 조회하게 되므로, N(author쿼리) + 1(post쿼리) 문제발생
+//        jpa는 기본방향성이 fetch lazy이므로, 참조하는 시점에 쿼리를내보내게 되어 JOIN문을 만들어주지 않고, N+1 문제발생
+
+//        페이지처리 findAll 호출
+//        stream() 포함하고 있음
+        Page<Post> postList = postRepository.findAllByDelYn(pageable, "N");
+        return postList.map(a->PostListDto.fromEntity(a));
     }
+
+
 }
