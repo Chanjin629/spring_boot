@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 // Component 로도 대채 가능(트랜잭션처리가 없는 경우에)
 @Service
 @RequiredArgsConstructor
-// 스프링에서 메서드단위로 트랜잭션처리를 하고, 만약 예외(unchecked)발생시 자동 롤백처리 지원
+// 스프링에서 메서드단위로 트랜잭션처리(commit)를 하고, 만약 예외(unchecked)발생시 자동 롤백처리 지원
 @Transactional
 public class AuthorService {
 
@@ -47,10 +47,22 @@ public class AuthorService {
         if(authorRepository.findByEmail(authorCreateDto.getEmail()).isPresent()){
             throw new IllegalArgumentException("이미 존재하는 이메일 입니다");
         }
+
         // toEntity 패턴을 통해 Author 객체 조립을 공통화
         Author author = authorCreateDto.authorToEntity();//new Author(authorCreateDto.getName(), authorCreateDto.getEmail(), authorCreateDto.getPassword());
         this.authorRepository.save(author);
-
+//        cascading 테스트 : 회원이 생성될때, 곹바로 "가입인사" 글을 생성하는 상황
+//        방법 2가지
+//        방법1. 직접 POST객체 생성 후 저장
+        Post post = Post.builder()
+                .title("안녕하세요")
+                .contents(authorCreateDto.getName() + "입니다. 반갑습니다")
+//                author 객체가 db에 save 되는 순간 엔티티매니저와 영속성컨텍스트에 의해 author 객체에도 id값 생성
+                .author(author)
+                .build();
+//        postRepository.save(post);
+//        방법2. cascade옵션 활용
+        author.getPostList().add(post);
     }
     // 트랜잭션이 필요없는경우, 아래와같이 명시적으로 제외
     @Transactional(readOnly = true)
