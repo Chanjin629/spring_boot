@@ -1,21 +1,21 @@
 package com.beyond.basic.b2_board.author.service;
 
 import com.beyond.basic.b2_board.author.domain.Author;
-import com.beyond.basic.b2_board.author.dto.AuthorCreateDto;
-import com.beyond.basic.b2_board.author.dto.AuthorDetailDto;
-import com.beyond.basic.b2_board.author.dto.AuthorListDto;
-import com.beyond.basic.b2_board.author.dto.AuthorUpdatePwDto;
+import com.beyond.basic.b2_board.author.dto.*;
 //import com.beyond.basic.b2_board.repository.AuthorJdbcRepository;
 //import com.beyond.basic.b2_board.repository.AuthorMemoryRepository;
 import com.beyond.basic.b2_board.author.repository.AuthorRepository;
 import com.beyond.basic.b2_board.post.domain.Post;
 import com.beyond.basic.b2_board.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 // Component 로도 대채 가능(트랜잭션처리가 없는 경우에)
@@ -42,6 +42,7 @@ public class AuthorService {
     // 다형성 설계는 불가
     private final AuthorRepository authorRepository;
     private final PostRepository postRepository;
+    private final PasswordEncoder passwordEncoder;
     public void save(AuthorCreateDto authorCreateDto){
         // 이메을 중복검증
         if(authorRepository.findByEmail(authorCreateDto.getEmail()).isPresent()){
@@ -49,8 +50,8 @@ public class AuthorService {
         }
 
         // toEntity 패턴을 통해 Author 객체 조립을 공통화
-        Author author = authorCreateDto.authorToEntity();//new Author(authorCreateDto.getName(), authorCreateDto.getEmail(), authorCreateDto.getPassword());
-        this.authorRepository.save(author);
+        String encodedPassword = passwordEncoder.encode(authorCreateDto.getPassword());
+        Author author = authorCreateDto.authorToEntity(encodedPassword);//new Author(authorCreateDto.getName(), authorCreateDto.getEmail(), authorCreateDto.getPassword());
 //        cascading 테스트 : 회원이 생성될때, 곹바로 "가입인사" 글을 생성하는 상황
 //        방법 2가지
 //        방법1. 직접 POST객체 생성 후 저장
@@ -63,6 +64,25 @@ public class AuthorService {
 //        postRepository.save(post);
 //        방법2. cascade옵션 활용
         author.getPostList().add(post);
+        this.authorRepository.save(author);
+    }
+
+    public Author doLogin(AuthorLoginDto dto){
+        Optional<Author> optionalAuthor = authorRepository.findByEmail(dto.getEmail());
+        boolean check = true;
+        if(!optionalAuthor.isPresent()){
+            check = false;
+        } else {
+            // 비밀번호 일치여부 검증 : matches 함수를 통해서 암호되지 않은값을 다시 암호화하여 db의 password 검증
+            if(!passwordEncoder.matches(dto.getPassword(), optionalAuthor.get().getPassword())){
+                check = false;
+            }
+        }
+        if(!check){
+            throw new IllegalArgumentException("email 또는 비밀번호가 일치하지 않습니다");
+        }
+        return optionalAuthor.get();
+
     }
     // 트랜잭션이 필요없는경우, 아래와같이 명시적으로 제외
     @Transactional(readOnly = true)

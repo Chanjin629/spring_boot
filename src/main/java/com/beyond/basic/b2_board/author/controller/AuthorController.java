@@ -1,13 +1,14 @@
 package com.beyond.basic.b2_board.author.controller;
 
-import com.beyond.basic.b2_board.author.dto.AuthorCreateDto;
-import com.beyond.basic.b2_board.author.dto.AuthorListDto;
-import com.beyond.basic.b2_board.author.dto.AuthorUpdatePwDto;
+import com.beyond.basic.b2_board.author.domain.Author;
+import com.beyond.basic.b2_board.author.dto.*;
 import com.beyond.basic.b2_board.author.service.AuthorService;
+import com.beyond.basic.b2_board.common.JwtTokenProvider;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.List;
 @RequestMapping("/author")
 public class AuthorController {
     private final AuthorService authorService;
+    private final JwtTokenProvider jwtTokenProvider;
     // 회원가입
     @PostMapping("/create")
     // ResponseEntity<?> 모든객체 허용가능
@@ -35,14 +37,31 @@ public class AuthorController {
         return new ResponseEntity<>("OK", HttpStatus.CREATED);
 
     }
+
+    // 로그인 : /author/doLogin
+    @PostMapping("/doLogin")
+    public ResponseEntity<?> doLogin(@RequestBody AuthorLoginDto dto){
+        Author author = authorService.doLogin(dto);
+//        토큰 생성 및 return
+        String token = jwtTokenProvider.createAtToken(author);
+
+        return new ResponseEntity<>
+                (new CommonDto(token, HttpStatus.OK.value(),"token is created"),HttpStatus.OK );
+    }
+
     // 회원목록조회 : /author/list
     @GetMapping("/list")
+    //    Admin 권한이 있는지를 authentication 객체에서 쉽게 확인
+//    "hasRole('Admin') or hasRole('Seller')" 여러명에게 권한을 지정할수있다
+    @PreAuthorize("hasRole('Admin')")
     public List<AuthorListDto> list(){
         return authorService.findAll();
     }
     // 회원상세조회 : /author/detail/1
     // 서버에서 별도의 try catch 하지 않으면 , 에러발생시 500 에러 + 스프링의 포멧으로 에러발생
     @GetMapping("/detail/{id}")
+//    Admin 권한이 있는지를 authentication 객체에서 쉽게 확인
+    @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<?> detail(@PathVariable Long id){
             return new ResponseEntity<>(authorService.findById(id), HttpStatus.CREATED);
     }
