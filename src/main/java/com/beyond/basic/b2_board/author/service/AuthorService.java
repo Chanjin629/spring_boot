@@ -8,6 +8,7 @@ import com.beyond.basic.b2_board.author.repository.AuthorRepository;
 import com.beyond.basic.b2_board.post.domain.Post;
 import com.beyond.basic.b2_board.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -60,6 +61,7 @@ public class AuthorService {
                 .contents(authorCreateDto.getName() + "입니다. 반갑습니다")
 //                author 객체가 db에 save 되는 순간 엔티티매니저와 영속성컨텍스트에 의해 author 객체에도 id값 생성
                 .author(author)
+                .delYn("N")
                 .build();
 //        postRepository.save(post);
 //        방법2. cascade옵션 활용
@@ -109,6 +111,14 @@ public class AuthorService {
         AuthorDetailDto dto = AuthorDetailDto.fromEntity(author);
         // author.detailFromEntity();
         // new AuthorDetailDto(author.getId(),author.getName(),author.getEmail());
+        return dto;
+    }
+
+    @Transactional(readOnly = true)
+    public AuthorDetailDto myinfo(){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Author author  = authorRepository.findByEmail(email).orElseThrow(()->new NoSuchElementException("없는사용자"));
+        AuthorDetailDto dto = AuthorDetailDto.fromEntity(author);
         return dto;
     }
 

@@ -61,9 +61,15 @@ public class AuthorController {
     // 서버에서 별도의 try catch 하지 않으면 , 에러발생시 500 에러 + 스프링의 포멧으로 에러발생
     @GetMapping("/detail/{id}")
 //    Admin 권한이 있는지를 authentication 객체에서 쉽게 확인
+//    권한이 없을경우 filterchain에서 에러발생
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<?> detail(@PathVariable Long id){
             return new ResponseEntity<>(authorService.findById(id), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/myinfo")
+    public ResponseEntity<?> getMyInfo(){
+        return new ResponseEntity<>(authorService.myinfo(), HttpStatus.CREATED);
     }
     // 비밀번호수정 : email,password -> json
     @PatchMapping("/updatepw")

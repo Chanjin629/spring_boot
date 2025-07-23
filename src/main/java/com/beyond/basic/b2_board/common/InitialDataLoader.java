@@ -16,7 +16,7 @@ public class InitialDataLoader implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     @Override
     public void run(String... args) throws Exception {
-        if(authorRepository.findByEmail("admain@naver.com").isPresent()){
+        if(authorRepository.findByEmail("admin@naver.com").isPresent()){
             return;
         }
         Author author = Author.builder()

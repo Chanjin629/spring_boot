@@ -27,6 +27,8 @@ public class SecurityConfig {
 //    Bean은 메서드 위에 붙여 Return 되는 객체를 싱글톤 객체로 생성, Component 는 클래스 위에 붙여 클래스 자체를 싱글톤 객체로 생성
 //    filter 계층에서 filter 로직을 커스텀.
     private final JwtTokenFilter jwtTokenFilter;
+    private final JwtAuthenticationHandler jwtAuthenticationHandler;
+    private final JwtAuthorizationHandler jwtAuthorizationHandler;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
@@ -42,6 +44,10 @@ public class SecurityConfig {
                 .sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // token 을 검증하고 , token 검증을 통해  Authentication 객체 생성
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(e->
+                        e.authenticationEntryPoint(jwtAuthenticationHandler) // 401의 경우
+                        .accessDeniedHandler(jwtAuthorizationHandler) // 403의 경우
+                )
                 // 예외 api 정책 설정
                 // authenticated() : 예외를 제외한 모든 요청에 대해서 Authentication 객체가 생성되기를 요구
                 .authorizeHttpRequests(a->a.requestMatchers("/author/create", "author/doLogin").permitAll().anyRequest().authenticated())
