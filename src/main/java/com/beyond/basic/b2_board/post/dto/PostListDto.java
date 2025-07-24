@@ -14,10 +14,12 @@ public class PostListDto {
     private Long id;
     private String title;
     private String authorEmail;
+    private String category;
     public static PostListDto fromEntity(Post post) {
         return PostListDto.builder()
                 .id(post.getId())
                 .title(post.getTitle())
+                .category(post.getCategory())
                 .authorEmail(post.getAuthor().getEmail()).build();
 
     }

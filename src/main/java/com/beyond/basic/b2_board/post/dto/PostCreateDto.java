@@ -21,6 +21,7 @@ public class PostCreateDto {
     @NotEmpty
     private String title;
     private String contents;
+    private String category;
 //    @NotNull // 숫자는 NotEmpty 사용불가
 //    private Long authorId;
     @Builder.Default
@@ -33,6 +34,7 @@ public class PostCreateDto {
                 .title(this.title)
                 .contents(this.contents)
 //                .authorId(this.authorId)
+                .category(this.category)
                 .author(author)
                 .delYn("N")
                 .appointment(this.appointment)

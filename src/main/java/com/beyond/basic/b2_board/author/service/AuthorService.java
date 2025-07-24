@@ -5,15 +5,23 @@ import com.beyond.basic.b2_board.author.dto.*;
 //import com.beyond.basic.b2_board.repository.AuthorJdbcRepository;
 //import com.beyond.basic.b2_board.repository.AuthorMemoryRepository;
 import com.beyond.basic.b2_board.author.repository.AuthorRepository;
+import com.beyond.basic.b2_board.common.AwsS3Config;
 import com.beyond.basic.b2_board.post.domain.Post;
 import com.beyond.basic.b2_board.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectAclRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -44,7 +52,11 @@ public class AuthorService {
     private final AuthorRepository authorRepository;
     private final PostRepository postRepository;
     private final PasswordEncoder passwordEncoder;
-    public void save(AuthorCreateDto authorCreateDto){
+    private final AwsS3Config  awsS3Config;
+    private final S3Client s3Client;
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
+    public void save(AuthorCreateDto authorCreateDto, MultipartFile profileImage) {
         // 이메을 중복검증
         if(authorRepository.findByEmail(authorCreateDto.getEmail()).isPresent()){
             throw new IllegalArgumentException("이미 존재하는 이메일 입니다");
@@ -53,20 +65,42 @@ public class AuthorService {
         // toEntity 패턴을 통해 Author 객체 조립을 공통화
         String encodedPassword = passwordEncoder.encode(authorCreateDto.getPassword());
         Author author = authorCreateDto.authorToEntity(encodedPassword);//new Author(authorCreateDto.getName(), authorCreateDto.getEmail(), authorCreateDto.getPassword());
-//        cascading 테스트 : 회원이 생성될때, 곹바로 "가입인사" 글을 생성하는 상황
-//        방법 2가지
-//        방법1. 직접 POST객체 생성 후 저장
-        Post post = Post.builder()
-                .title("안녕하세요")
-                .contents(authorCreateDto.getName() + "입니다. 반갑습니다")
-//                author 객체가 db에 save 되는 순간 엔티티매니저와 영속성컨텍스트에 의해 author 객체에도 id값 생성
-                .author(author)
-                .delYn("N")
-                .build();
-//        postRepository.save(post);
-//        방법2. cascade옵션 활용
-        author.getPostList().add(post);
+////        cascading 테스트 : 회원이 생성될때, 곹바로 "가입인사" 글을 생성하는 상황
+////        방법 2가지
+////        방법1. 직접 POST객체 생성 후 저장
+//        Post post = Post.builder()
+//                .title("안녕하세요")
+//                .contents(authorCreateDto.getName() + "입니다. 반갑습니다")
+////                author 객체가 db에 save 되는 순간 엔티티매니저와 영속성컨텍스트에 의해 author 객체에도 id값 생성
+//                .category("가입인사")
+//                .author(author)
+//                .delYn("N")
+//                .build();
+////        postRepository.save(post);
+////        방법2. cascade옵션 활용
+//        author.getPostList().add(post);
         this.authorRepository.save(author);
+
+//        image명 설정
+        String fileName = "user-"+author.getId()+"-profileimage-"+profileImage.getOriginalFilename();
+//        저장객체 구성
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(fileName)
+                .contentType(profileImage.getContentType())
+                .build();
+
+//        이미지를 업로드 (byte 형태로)
+        try{
+            s3Client.putObject(putObjectRequest, RequestBody.fromBytes(profileImage.getBytes()));
+        } catch(IOException e) {
+//            checked -> unchecked로 바꿔 전체 rollback되도록 예외처리
+            throw new IllegalArgumentException("이미지 업로드 실패");
+        }
+//        이미지 url 추출
+        String imgUrl = s3Client.utilities().getUrl(a->a.bucket(bucket).key(fileName)).toExternalForm();
+        author.updateImageUrl(imgUrl);
+//        author.setProfileImage(imgUrl);
     }
 
     public Author doLogin(AuthorLoginDto dto){
@@ -126,6 +160,7 @@ public class AuthorService {
         Author author = authorRepository.findByEmail(authorUpdatePwDto.getEmail()).orElseThrow(()->new NoSuchElementException("no email found"));
 //        dirty checking : 객체를 수정한 후 별도의 update쿼리 발생시키지 않아도, 영속성 컨텍스트에 의해 객체 변경사항 자동 db 반영
         author.updatePw(authorUpdatePwDto.getPassword());
+//        author.setPassword(passwordEncoder.encode(authorUpdatePwDto.getPassword()));
     }
     public void delete(Long id){
         Author author =  authorRepository.findById(id).orElseThrow(()->new NoSuchElementException("없는 사용자입니다"));

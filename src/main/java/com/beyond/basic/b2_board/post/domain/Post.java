@@ -18,6 +18,7 @@ public class Post extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String category;
     @Column(nullable = false)
     private String title;
     @Column(length = 3000)

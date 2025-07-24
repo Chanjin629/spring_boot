@@ -16,6 +16,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @ToString
+@Setter
 // JPA 를 사용할경우 Entity 반드시 붙여야하는 어노테이션
 // JPA 의 EntityManager 에게 객체를 위임하기 위한 어노테이션
 // 엔티티매니저는 영속성컨텍스트(엔티티의 현재상황)를 통해 db 데이터 관리
@@ -36,6 +37,7 @@ public class Author extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     @Builder.Default // 빌더패턴에서 변수 초기화(디폴트값)시 builder.default어노테이션 필수
     private Role role = Role.User;
+    private String profileImage;
 
 //    OneToMany 는 선택사항, 또한 default 가 lazy
 //    mappedBy ManyToOne 쪽에 변수명을 문자열로 지정. fk 관리를 반대편(post)쪽에서 한다는 의미 -> 연관관계의 주인설정
@@ -73,5 +75,7 @@ public class Author extends BaseTimeEntity {
         return new AuthorListDto(this.id, this.name, this.email);
     }
 
-
+    public void updateImageUrl(String imageUrl){
+        this.profileImage = imageUrl;
+    }
 }

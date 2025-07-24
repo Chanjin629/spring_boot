@@ -47,6 +47,8 @@ dependencies {
 
 //	서버단에서 화면을 만들어서 랜더링(화면을 준다라는의미) 해주기 위한 기술
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	//    파일처리를 위한 aws 의존성 추가
+	implementation 'software.amazon.awssdk:s3:2.17.58'
 }
 
 tasks.named('test') {
