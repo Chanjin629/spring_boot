@@ -93,7 +93,7 @@ public class AuthorService {
 //        이미지를 업로드 (byte 형태로)
         try{
             s3Client.putObject(putObjectRequest, RequestBody.fromBytes(profileImage.getBytes()));
-        } catch(IOException e) {
+        } catch(Exception e) {
 //            checked -> unchecked로 바꿔 전체 rollback되도록 예외처리
             throw new IllegalArgumentException("이미지 업로드 실패");
         }

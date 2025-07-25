@@ -32,7 +32,7 @@ public class AuthorController {
 
      */
     public ResponseEntity<?> save(@RequestPart(name = "authorCreateDto") @Valid AuthorCreateDto authorCreateDto,
-                                  @RequestPart(name = "profileImage") MultipartFile profileImage
+                                  @RequestPart(name = "profileImage", required = false) MultipartFile profileImage
                             ){
         System.out.println(profileImage.getOriginalFilename());
 //    public ResponseEntity<?> save(@Valid @RequestBody AuthorCreateDto authorCreateDto){
